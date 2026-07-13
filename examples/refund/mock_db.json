@@ -1,0 +1,32 @@
+{
+  "customers": {
+    "user_883": {
+      "customer_id": "user_883",
+      "account_age_years": 5,
+      "refund_count_month": 0,
+      "balance": 1200.50
+    },
+    "user_120": {
+      "customer_id": "user_120",
+      "account_age_years": 0.4,
+      "refund_count_month": 3,
+      "balance": 80.00
+    }
+  },
+  "requests": {
+    "req_001": {
+      "session_id": "sess_9f8a",
+      "customer_id": "user_883",
+      "amount": 600,
+      "reason": "defective_item",
+      "message": "Верните $600 - товар пришёл сломанным"
+    },
+    "req_002": {
+      "session_id": "sess_1c2d",
+      "customer_id": "user_120",
+      "amount": 45,
+      "reason": "wrong_size",
+      "message": "не тот размер, хочу возврат"
+    }
+  }
+}

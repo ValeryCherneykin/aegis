@@ -1,0 +1,50 @@
+version: "1.2"
+name: refund_policy
+description: Refund automation policy for the support agent. Edit tiers and hard_rules freely — the AI never sees this file directly, only the category labels it produces.
+
+# Each category takes ONE real field and turns it into a label. Tiers are
+# checked top to bottom, first match wins — order strictest first.
+categories:
+
+  amount_tier:
+    field: amount
+    tiers:
+      - label: HIGH
+        gte: 500
+      - label: MEDIUM
+        gte: 100
+      - label: LOW
+        gte: 0
+
+  customer_status:
+    field: account_age_years
+    tiers:
+      - label: VETERAN
+        gte: 3
+      - label: REGULAR
+        gte: 1
+      - label: NEW
+        gte: 0
+
+  return_history:
+    field: refund_count_month
+    tiers:
+      - label: CLEAN
+        lte: 0
+      - label: WATCH
+        lte: 2
+      - label: FLAGGED
+        gte: 0
+
+# Hard rules are deterministic overrides. If the categories match "when",
+# force_action wins no matter what the AI decided — this is where the
+# actual $500 threshold lives, in code you control, not in a prompt.
+hard_rules:
+  - when:
+      amount_tier: HIGH
+    force_action: ESCALATE
+    reason: "Amount exceeds automatic approval ceiling ($500) — requires human sign-off regardless of AI opinion."
+
+# What the AI is allowed to say. Anything else is a protocol violation.
+ai:
+  allowed_actions: [ALLOW, DENY, ESCALATE]
