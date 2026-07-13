@@ -49,22 +49,16 @@ dockers:
     use: buildx
     goos: linux
     goarch: amd64
-    build_flag_templates:
-      - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
+    build: aegis 
     extra_files:
       - policies/
-
+  
   - image_templates:
       - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
     use: buildx
     goos: linux
     goarch: arm64
-    build_flag_templates:
-      - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
-      - "--label=org.opencontainers.image.version={{ .Version }}"
+    build: aegis
     extra_files:
       - policies/
 
