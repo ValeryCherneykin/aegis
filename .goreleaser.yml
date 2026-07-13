@@ -53,9 +53,8 @@ dockers:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
-    extra_files: # <--- ПЕРЕДАЕМ ФАЙЛЫ В КОНТЕКСТ СБОРКИ AMD64
+    extra_files:
       - policies/
-      - refund_v1.yaml
 
   - image_templates:
       - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
@@ -66,9 +65,8 @@ dockers:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.version={{ .Version }}"
-    extra_files: # <--- ПЕРЕДАЕМ ФАЙЛЫ В КОНТЕКСТ СБОРКИ ARM64
+    extra_files:
       - policies/
-      - refund_v1.yaml
 
 docker_manifests:
   - name_template: "ghcr.io/valerycherneykin/aegis:{{ .Version }}"
