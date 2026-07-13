@@ -1,7 +1,7 @@
 # Aegis — Deterministic Execution Layer for AI Agents
 
 <p align="center">
-<img src="assets/logo.svg" width="600" alt="Aegis — Deterministic AI Gateway">
+<img src="assets/logo.png" width="600" alt="Aegis — Deterministic AI Gateway">
 </p>
 
 **Let AI recommend actions. Let Aegis decide whether they happen.**
