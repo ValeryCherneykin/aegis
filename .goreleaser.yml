@@ -1,0 +1,75 @@
+version: 2
+project_name: aegis
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: aegis
+    main: ./cmd/aegis
+    binary: aegis
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+release:
+  github:
+    owner: valerycherneykin
+    name: aegis
+  mode: replace
+  name_template: "v{{ .Version }}"
+
+dockers:
+  - image_templates:
+      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+
+  - image_templates:
+      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+
+docker_manifests:
+  - name_template: "ghcr.io/valerycherneykin/aegis:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-amd64"
+      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/valerycherneykin/aegis:latest"
+    image_templates:
+      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-amd64"
+      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
