@@ -1,5 +1,9 @@
 # Aegis — Deterministic Execution Layer for AI Agents
 
+<p align="center">
+<img src="assets/logo.png" width="600" alt="Aegis — Deterministic AI Gateway">
+</p>
+
 **Let AI recommend actions. Let Aegis decide whether they happen.**
 
 ```
@@ -37,14 +41,14 @@ control:
 
 ```
 $600, account since 2018, 0 refunds this month
-        │
-        ▼  (deterministic, in your infra, never touched by the model)
+│
+▼  (deterministic, in your infra, never touched by the model)
 amount_tier: HIGH · customer_status: VETERAN · return_history: CLEAN
-        │
-        ▼
-   AI sees only this. Decides: ESCALATE.
-        │
-        ▼
+│
+▼
+AI sees only this. Decides: ESCALATE.
+│
+▼
 Your code applies ESCALATE to the REAL $600 request.
 ```
 
@@ -68,10 +72,10 @@ tool-layer gateway can undo that. Aegis is the right layer for what the
 ## Architecture
 
 ```
-                         AI Agent (Claude, or anything MCP-compatible)
-                                       │
-                          tool_call: request_refund(request_id)
-                                       ▼
+                 AI Agent (Claude, or anything MCP-compatible)
+                               │
+                  tool_call: request_refund(request_id)
+                               ▼
 ┌──────────────────────────── Aegis ──────────────────────────────────┐
 │                                                                     │
 │   MCP Server (internal/mcpserver)                                   │
@@ -112,21 +116,63 @@ need full YAML or CEL expressiveness in production, swap
 
 ## Try it
 
-```bash
+Bash
+
+```
 go run .                          # HIGH-amount case → escalated to a human
 go run . -request req_002         # low amount, flagged history → denied
-cat audit.log                     # every decision, tied to the policy version that made it
+cat audit.log                      # every decision, tied to the policy version that made it
 ```
 
 ### With a real model instead of the built-in mock
 
-```bash
+Bash
+
+```
 export ANTHROPIC_API_KEY=sk-ant-...
 go run .
 ```
 
 `internal/decision/agent.go` has zero fields for amounts, names, or IDs
+
 anywhere near the API call — that's not a policy, it's the type system.
+
+### Production Deployment (Docker Sidecar)
+
+Aegis is distributed as an ultra-lightweight, secure `scratch` Docker container (~15MB) with non-root privileges. It runs beautifully as a sidecar alongside your primary microservice.
+
+To pull and run the gateway with your local policy and persistent audit logs:
+
+Bash
+
+```
+docker run -d \
+--name aegis-gateway \
+-v ./policies/refund_v1.yaml:/refund_v1.yaml \
+-v ./audit_logs:/data \
+ghcr.io/valerycherneykin/aegis:latest
+```
+
+Example integration inside a `docker-compose.yml` stack:
+
+YAML
+
+```
+services:
+my-app:
+build: .
+depends_on:
+- aegis
+environment:
+- AEGIS_GATEWAY_URL=http://aegis:8080
+
+aegis:
+image: ghcr.io/valerycherneykin/aegis:latest
+volumes:
+- ./policies/refund_v1.yaml:/refund_v1.yaml
+- ./audit_logs:/data
+restart: unless-stopped
+```
 
 ### As a real MCP server (Claude Desktop / Claude Code)
 
@@ -138,13 +184,13 @@ Add to your MCP client config (e.g. `claude_desktop_config.json`):
 
 ```json
 {
-  "mcpServers": {
-    "aegis": {
-      "command": "/absolute/path/to/aegis",
-      "args": ["-serve"],
-      "env": { "ANTHROPIC_API_KEY": "sk-ant-..." }
-    }
-  }
+"mcpServers": {
+"aegis": {
+"command": "/absolute/path/to/aegis",
+"args": ["-serve"],
+"env": { "ANTHROPIC_API_KEY": "sk-ant-..." }
+}
+}
 }
 ```
 
@@ -162,18 +208,18 @@ required:
 
 ```yaml
 categories:
-  amount_tier:
-    field: amount          # any numeric field present in your facts
-    tiers:
-      - label: HIGH
-        gte: 500            # first match wins, order strictest first
-      - label: LOW
-        gte: 0
+amount_tier:
+field: amount          # any numeric field present in your facts
+tiers:
+- label: HIGH
+gte: 500            # first match wins, order strictest first
+- label: LOW
+gte: 0
 
 hard_rules:
-  - when: { amount_tier: HIGH }
-    force_action: ESCALATE   # wins over the AI no matter what it said
-    reason: "..."
+- when: { amount_tier: HIGH }
+force_action: ESCALATE   # wins over the AI no matter what it said
+reason: "..."
 ```
 
 To wire in your real database instead of `examples/refund/mock_db.json`,
@@ -191,20 +237,20 @@ domain-agnostic.
 ## Honest limitations (please read before a "Show HN")
 
 - **Not a general-purpose PII redaction gateway.** It's narrower and more
-  rigorous *within* that scope: automated decisioning with numeric
-  thresholds. For open-ended chat, you still want text-level PII masking
-  (e.g. Microsoft Presidio) upstream of this.
+rigorous *within* that scope: automated decisioning with numeric
+thresholds. For open-ended chat, you still want text-level PII masking
+(e.g. Microsoft Presidio) upstream of this.
 - **Free-text nuance is not yet categorized.** The demo only turns numeric
-  facts into tiers. A real deployment probably also wants a
-  `reason_category` derived from the complaint text (`DEFECTIVE_ITEM` vs
-  `CHANGED_MIND`) — that's a natural next module, not yet built here.
+facts into tiers. A real deployment probably also wants a
+`reason_category` derived from the complaint text (`DEFECTIVE_ITEM` vs
+`CHANGED_MIND`) — that's a natural next module, not yet built here.
 - **Category boundaries are business logic and need governance.** If you
-  change `amount_tier: HIGH` from `$500` to `$600`, bump the policy
-  `version` — the audit log is only useful if it can answer "which rules
-  were live at decision time."
+change `amount_tier: HIGH` from `$500` to `$600`, bump the policy
+`version` — the audit log is only useful if it can answer "which rules
+were live at decision time."
 - **This pattern isn't unclaimed territory.** Business rule engines
-  (Drools, InRule, Taktile and others) are actively adding "AI as an
-  isolated, swappable node, never the final authority" to their own
-  platforms in 2026. Aegis is a small, readable, MIT-licensed reference
-  implementation of that pattern for the MCP era — not a claim to have
-  invented decision governance.
+(Drools, InRule, Taktile and others) are actively adding "AI as an
+isolated, swappable node, never the final authority" to their own
+platforms in 2026. Aegis is a small, readable, MIT-licensed reference
+implementation of that pattern for the MCP era — not a claim to have
+invented decision governance.
