@@ -184,13 +184,19 @@ Add to your MCP client config (e.g. `claude_desktop_config.json`):
 
 ```json
 {
-"mcpServers": {
-"aegis": {
-"command": "/absolute/path/to/aegis",
-"args": ["-serve"],
-"env": { "ANTHROPIC_API_KEY": "sk-ant-..." }
-}
-}
+  "mcpServers": {
+    "aegis": {
+      "command": "/полный/путь/до/бинарника/aegis",
+      "args": [
+        "-serve",
+        "-policy",
+        "/путь/к/вашей/policy.yaml"
+      ],
+      "env": {
+        "ANTHROPIC_API_KEY": "sk-ant-..."
+      }
+    }
+  }
 }
 ```
 
