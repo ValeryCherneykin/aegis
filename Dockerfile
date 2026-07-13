@@ -12,7 +12,7 @@ COPY --from=certs /usr/share/zoneinfo /usr/share/zoneinfo
 # Copy the binary from the current directory
 COPY aegis /aegis
 COPY policies/ /policies/
-COPY refund_v1.yaml /refund_v1.yaml
+COPY policies/refund_v1.yaml /refund_v1.yaml
 
 USER 10001:10001
 
