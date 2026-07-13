@@ -47,4 +47,4 @@ jobs:
           version: latest
           args: release --clean --parallelism 1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # <--- ВОТ ЭТО БЫЛО ПРОПУЩЕНО
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
