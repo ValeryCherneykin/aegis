@@ -49,7 +49,7 @@ dockers:
     use: buildx
     goos: linux
     goarch: amd64
-    build: aegis 
+    build: aegis
     extra_files:
       - policies/
   
