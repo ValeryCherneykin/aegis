@@ -1,0 +1,14 @@
+services:
+  aegis:
+    build:
+      context: .
+      dockerfile: Dockerfile   # the self-building one, NOT Dockerfile.goreleaser
+    image: aegis:dev
+    # MCP is a stdio protocol — a detached container with nothing attached
+    # to its stdin isn't useful for actually talking to it. This service
+    # is here so `docker compose build` gives you a fast sanity check that
+    # the image builds and starts; for a real MCP session, run it
+    # attached (see README "Try the container") or spawn it as a
+    # subprocess from your MCP client instead of through compose.
+    stdin_open: true
+    tty: true

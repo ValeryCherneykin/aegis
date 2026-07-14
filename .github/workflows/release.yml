@@ -1,5 +1,4 @@
 name: Release
-
 on:
   push:
     tags:
@@ -12,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      packages: write 
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,8 +24,9 @@ jobs:
           go-version: "1.23"
           cache: true
 
-      - name: Download dependencies
-        run: go mod download
+      # go mod tidy/download already happens in .goreleaser.yaml's
+      # before.hooks — this step was redundant but harmless; removed to
+      # keep the one source of truth in the goreleaser config.
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -44,7 +44,7 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: "~> v2"
           args: release --clean --parallelism 1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -23,10 +23,10 @@ builds:
       - arm64
 
 archives:
-  - format: tar.gz
+  - formats: [tar.gz]
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
@@ -43,31 +43,22 @@ release:
   mode: replace
   name_template: "v{{ .Version }}"
 
-dockers:
-  - image_templates:
-      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-amd64"
-    use: buildx
-    goos: linux
-    goarch: amd64
-    build: aegis
+# dockers_v2 replaces the old dockers: + docker_manifests: pair — one
+# buildx invocation builds and pushes the whole multi-arch manifest
+# instead of two separate images stitched together afterwards.
+dockers_v2:
+  - ids: [aegis]
+    dockerfile: Dockerfile.goreleaser   # the copy-only one — see that file's header comment
+    images:
+      - ghcr.io/valerycherneykin/aegis
+    tags:
+      - "{{ .Version }}"
+      - "{{ if not .IsNightly }}latest{{ end }}"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    # Anything the Dockerfile COPYs besides the binary itself must be
+    # listed here — GoReleaser's docker build context is a temp dir, not
+    # your repo, so it won't see policies/ unless you say so explicitly.
     extra_files:
       - policies/
-  
-  - image_templates:
-      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
-    use: buildx
-    goos: linux
-    goarch: arm64
-    build: aegis
-    extra_files:
-      - policies/
-
-docker_manifests:
-  - name_template: "ghcr.io/valerycherneykin/aegis:{{ .Version }}"
-    image_templates:
-      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-amd64"
-      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/valerycherneykin/aegis:latest"
-    image_templates:
-      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-amd64"
-      - "ghcr.io/valerycherneykin/aegis:{{ .Version }}-arm64"
